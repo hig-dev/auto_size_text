@@ -223,8 +223,15 @@ class AutoSizeText extends StatelessWidget {
     return _AutoSizeBuilder(
       text: span,
       style: style,
-      builder: (context, scale, overflow) {
+      builder: (context, scale, groupMaxFontSize, overflow) {
         overflowCallback?.call(overflow);
+        final fontSize =
+            span.style?.fontSize ?? style?.fontSize ?? _kDefaultFontSize;
+        final scaledFontSize = fontSize * scale;
+        final adjustedScale =
+            groupMaxFontSize != null && scaledFontSize > groupMaxFontSize
+                ? groupMaxFontSize / fontSize
+                : scale;
         return Text.rich(
           span,
           key: textKey,
@@ -235,7 +242,7 @@ class AutoSizeText extends StatelessWidget {
           locale: locale,
           softWrap: softWrap,
           overflow: this.overflow,
-          textScaler: TextScaler.linear(scale),
+          textScaler: TextScaler.linear(adjustedScale),
           maxLines: maxLines,
           semanticsLabel: semanticsLabel,
         );

@@ -1,7 +1,7 @@
 part of '../../flutter_auto_size_text.dart';
 
-typedef _AutoSizeTextBuilder = Widget Function(
-    BuildContext context, double textScaleFactor, bool overflow);
+typedef _AutoSizeTextBuilder = Widget Function(BuildContext context,
+    double textScaleFactor, double? groupMaxFontSize, bool overflow);
 
 class _AutoSizeBuilder extends StatefulWidget {
   const _AutoSizeBuilder({
@@ -140,12 +140,12 @@ class _AutoSizeBuilderState extends State<_AutoSizeBuilder> {
       textScaleFactor: widget.textScaleFactor ?? 1,
       minFontSize: widget.minFontSize ?? 12.0,
       maxFontSize: widget.maxFontSize ?? double.infinity,
+      groupMaxFontSize: widget.group?._effectiveMaxPossibleFontSize,
       stepGranularity: widget.stepGranularity ?? 1.0,
       presetFontSizes: widget.presetFontSizes,
-      groupConstraints: widget.group?._effectiveConstraints,
-      onConstraintsChanged: widget.group != null
-          ? (newConstraints) {
-              widget.group?._updateConstraints(this, newConstraints);
+      onMaxPossibleFontSizeChanged: widget.group != null
+          ? (maxPossibleFontSize) {
+              widget.group?._updateFontSize(this, maxPossibleFontSize);
             }
           : null,
     );

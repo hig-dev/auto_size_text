@@ -40,12 +40,12 @@ class _AutoSizeElement extends RenderObjectElement {
     super.unmount();
   }
 
-  void _updateText(double textScaleFactor, bool overflow) {
+  void _updateText(double textScaleFactor, double? groupMaxFontSize, bool overflow) {
     owner!.buildScope(this, () {
       _overflow = overflow;
       Widget built;
       try {
-        built = widget.builder(this, textScaleFactor, overflow);
+        built = widget.builder(this, textScaleFactor, groupMaxFontSize, overflow);
         debugWidgetBuilderValue(widget, built);
       } catch (e) {
         built = ErrorWidget(e);

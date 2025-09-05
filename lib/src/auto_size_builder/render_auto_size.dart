@@ -7,7 +7,10 @@ class _RenderAutoSize extends RenderBox
     with
         ContainerRenderObjectMixin<RenderBox,
             ContainerParentDataMixin<RenderBox>> {
-  _RenderAutoSize({required TextFitter fitter, this.onConstraintsChanged})
+  _RenderAutoSize(
+      {required TextFitter fitter,
+      this.onMaxPossibleFontSizeChanged,
+      required this.groupMaxFontSize})
       : _fitter = fitter;
 
   var _overflow = false;
@@ -16,10 +19,11 @@ class _RenderAutoSize extends RenderBox
   bool? _previousOverflow;
   double? _longestWordWidth;
 
-  Function(double, bool)? _buildCallback;
-  final void Function(BoxConstraints)? onConstraintsChanged;
+  Function(double, double?, bool)? _buildCallback;
+  double? groupMaxFontSize;
+  final void Function(double)? onMaxPossibleFontSizeChanged;
 
-  void updateBuildCallback(Function(double, bool)? buildCallback) {
+  void updateBuildCallback(Function(double, double?, bool)? buildCallback) {
     if (_buildCallback == buildCallback) return;
     _previousTextScaleFactor = null;
     _buildCallback = buildCallback;
@@ -35,6 +39,12 @@ class _RenderAutoSize extends RenderBox
     }
     _previousTextScaleFactor = null;
     _fitter = fitter;
+    markNeedsLayout();
+  }
+
+  void updateGroupMaxFontSize(double? newGroupMaxFontSize) {
+    if (groupMaxFontSize == newGroupMaxFontSize) return;
+    groupMaxFontSize = newGroupMaxFontSize;
     markNeedsLayout();
   }
 
@@ -110,8 +120,6 @@ class _RenderAutoSize extends RenderBox
   void performLayout() {
     final constraints = this.constraints;
 
-    onConstraintsChanged?.call(constraints);
-
     final result = _fitter.fit(constraints, _longestWordWidth);
     _longestWordWidth = result.longestWordWidth;
 
@@ -121,8 +129,11 @@ class _RenderAutoSize extends RenderBox
       _previousTextScaleFactor = result.scale;
       _previousOverflow = result.overflow;
       _needsBuild = false;
-      invokeLayoutCallback(
-          (_) => _buildCallback!(result.scale, result.overflow));
+      final fontSize = _fitter.text.style?.fontSize ?? _kDefaultFontSize;
+      final maxPossibleFontSize = fontSize * result.scale;
+      onMaxPossibleFontSizeChanged?.call(maxPossibleFontSize);
+      invokeLayoutCallback((_) =>
+          _buildCallback!(result.scale, groupMaxFontSize, result.overflow));
     }
 
     _overflow = result.overflow;

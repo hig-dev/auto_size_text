@@ -17,10 +17,10 @@ class _AutoSize extends RenderObjectWidget {
     required this.textScaleFactor,
     required this.minFontSize,
     required this.maxFontSize,
+    this.groupMaxFontSize,
     required this.stepGranularity,
     required this.presetFontSizes,
-    this.groupConstraints,
-    this.onConstraintsChanged,
+    this.onMaxPossibleFontSizeChanged,
   }) {
     _validateProperties();
   }
@@ -43,8 +43,8 @@ class _AutoSize extends RenderObjectWidget {
   final double maxFontSize;
   final double stepGranularity;
   final List<double>? presetFontSizes;
-  final BoxConstraints? groupConstraints;
-  final void Function(BoxConstraints)? onConstraintsChanged;
+  final double? groupMaxFontSize;
+  final void Function(double)? onMaxPossibleFontSizeChanged;
 
   TextFitter _buildFitter() {
     return TextFitter(
@@ -63,20 +63,22 @@ class _AutoSize extends RenderObjectWidget {
       maxFontSize: maxFontSize,
       stepGranularity: stepGranularity,
       presetFontSizes: presetFontSizes,
-      groupConstraints: groupConstraints,
     );
   }
 
   @override
   _RenderAutoSize createRenderObject(BuildContext context) {
     return _RenderAutoSize(
-        fitter: _buildFitter(), onConstraintsChanged: onConstraintsChanged);
+        fitter: _buildFitter(),
+        onMaxPossibleFontSizeChanged: onMaxPossibleFontSizeChanged,
+        groupMaxFontSize: groupMaxFontSize);
   }
 
   @override
   void updateRenderObject(
       BuildContext context, covariant _RenderAutoSize renderObject) {
     renderObject.updateTextFitter(_buildFitter());
+    renderObject.updateGroupMaxFontSize(groupMaxFontSize);
   }
 
   @override

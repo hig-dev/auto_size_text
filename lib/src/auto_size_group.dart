@@ -2,43 +2,27 @@ part of '../flutter_auto_size_text.dart';
 
 /// Controller to synchronize the fontSize of multiple AutoSizeTexts.
 class AutoSizeGroup {
-  final _listeners = <_AutoSizeBuilderState, BoxConstraints>{};
+  final _listeners = <_AutoSizeBuilderState, double>{};
   var _widgetsNotified = false;
 
   void _register(_AutoSizeBuilderState text) {
-    _listeners[text] = const BoxConstraints();
+    _listeners[text] = double.infinity;
   }
 
-  BoxConstraints get _effectiveConstraints {
-    const constraints = BoxConstraints();
-    double maxWidth = constraints.maxWidth;
-    double maxHeight = constraints.maxHeight;
-    final groupConstraints = _listeners.values.nonNulls.toList();
-
-    for (final groupConstraint in groupConstraints) {
-      if (groupConstraint.maxWidth < maxWidth) {
-        maxWidth = groupConstraint.maxWidth;
-      }
-      if (groupConstraint.maxHeight < maxHeight) {
-        maxHeight = groupConstraint.maxHeight;
-      }
-    }
-
-    final effectiveConstraints = BoxConstraints(
-      maxWidth: maxWidth,
-      maxHeight: maxHeight,
-    );
-
-    return effectiveConstraints;
+  double get _effectiveMaxPossibleFontSize {
+    final minMaxPossibleFontSize = _listeners.values.fold<double>(
+        double.infinity,
+        (previousValue, element) =>
+            element < previousValue ? element : previousValue);
+    return minMaxPossibleFontSize;
   }
 
-  void _updateConstraints(
-      _AutoSizeBuilderState text, BoxConstraints constraints) {
-    final oldEffectiveConstraints = _effectiveConstraints;
-    _listeners[text] = constraints;
-    final newEffectiveConstraints = _effectiveConstraints;
+  void _updateFontSize(_AutoSizeBuilderState text, double maxPossibleFontSize) {
+    final oldEffectiveMaxPossibleFontSize = _effectiveMaxPossibleFontSize;
+    _listeners[text] = maxPossibleFontSize;
+    final newEffectiveMaxPossibleFontSize = _effectiveMaxPossibleFontSize;
 
-    if (oldEffectiveConstraints != newEffectiveConstraints) {
+    if (oldEffectiveMaxPossibleFontSize != newEffectiveMaxPossibleFontSize) {
       _widgetsNotified = false;
       scheduleMicrotask(_notifyListeners);
     }
@@ -59,7 +43,7 @@ class AutoSizeGroup {
   }
 
   void _remove(_AutoSizeBuilderState text) {
-    _updateConstraints(text, const BoxConstraints());
+    _updateFontSize(text, double.infinity);
     _listeners.remove(text);
   }
 }
