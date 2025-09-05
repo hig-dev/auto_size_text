@@ -1,6 +1,4 @@
-import 'dart:math';
-
-import 'package:flutter/widgets.dart';
+part of '../flutter_auto_size_text.dart';
 
 const _kDefaultFontSize = 14;
 
@@ -21,6 +19,7 @@ class TextFitter {
     required this.maxFontSize,
     this.stepGranularity = 1.0,
     this.presetFontSizes,
+    this.groupConstraints,
   });
 
   final TextSpan text;
@@ -38,10 +37,19 @@ class TextFitter {
   final double maxFontSize;
   final double stepGranularity;
   final List<double>? presetFontSizes;
+  final BoxConstraints? groupConstraints;
 
   double? _longestWordWidth;
 
   TextFitResult fit(BoxConstraints constraints, [double? longestWordWidth]) {
+    var effectiveConstraints = constraints;
+    if (groupConstraints != null) {
+      effectiveConstraints = BoxConstraints(
+        maxWidth: min(constraints.maxWidth, groupConstraints!.maxWidth),
+        maxHeight: min(constraints.maxHeight, groupConstraints!.maxHeight),
+      );
+    }
+
     int left;
     int right;
 
@@ -54,7 +62,7 @@ class TextFitter {
     if (presetFontSizes == null) {
       final defaultFontSize = fontSize.clamp(minFontSize, maxFontSize);
       final defaultScale = defaultFontSize * textScaleFactor / fontSize;
-      final result = _measureText(defaultScale, constraints);
+      final result = _measureText(defaultScale, effectiveConstraints);
       if (!result.overflow) {
         return result;
       }
@@ -75,7 +83,7 @@ class TextFitter {
       } else {
         scale = presetFontSizes[mid] * textScaleFactor / fontSize;
       }
-      final result = _measureText(scale, constraints);
+      final result = _measureText(scale, effectiveConstraints);
       if (result.overflow) {
         right = mid - 1;
       } else {
@@ -205,6 +213,7 @@ class TextFitter {
         other.minFontSize == minFontSize &&
         other.maxFontSize == maxFontSize &&
         other.stepGranularity == stepGranularity &&
+        other.groupConstraints == groupConstraints &&
         other.presetFontSizes == presetFontSizes;
   }
 
@@ -224,6 +233,7 @@ class TextFitter {
       minFontSize,
       maxFontSize,
       stepGranularity,
+      groupConstraints,
       presetFontSizes,
     );
   }

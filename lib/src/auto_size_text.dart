@@ -1,5 +1,4 @@
-import 'package:flutter/widgets.dart';
-import 'package:flutter_auto_size_text/src/auto_size_builder/auto_size_builder.dart';
+part of '../flutter_auto_size_text.dart';
 
 /// Flutter widget that automatically resizes text to fit perfectly within its
 /// bounds.
@@ -140,7 +139,7 @@ class AutoSizeText extends StatelessWidget {
   /// If you want multiple [AutoSizeText]s to have the same text size, give all
   /// of them the same [AutoSizeGroup] instance. All of them will have the
   /// size of the smallest [AutoSizeText]
-  //final AutoSizeGroup? group;
+  final AutoSizeGroup? group;
 
   /// {@template auto_size_text.wrapWords}
   /// Whether words which don't fit in one line should be wrapped.
@@ -185,11 +184,11 @@ class AutoSizeText extends StatelessWidget {
     this.maxFontSize,
     this.stepGranularity,
     this.presetFontSizes,
-    //this.group,
+    this.group,
     this.wrapWords,
     this.overflowReplacement,
     this.overflowCallback,
-  })  : textSpan = null;
+  }) : textSpan = null;
 
   /// Creates a [AutoSizeText] widget with a [TextSpan].
   const AutoSizeText.rich(
@@ -212,16 +211,16 @@ class AutoSizeText extends StatelessWidget {
     this.maxFontSize,
     this.stepGranularity,
     this.presetFontSizes,
-    //this.group,
+    this.group,
     this.wrapWords,
     this.overflowReplacement,
     this.overflowCallback,
-  })  : data = null;
+  }) : data = null;
 
   @override
   Widget build(BuildContext context) {
     final span = textSpan ?? TextSpan(text: data);
-    return AutoSizeBuilder(
+    return _AutoSizeBuilder(
       text: span,
       style: style,
       builder: (context, scale, overflow) {
@@ -246,6 +245,7 @@ class AutoSizeText extends StatelessWidget {
       maxFontSize: maxFontSize,
       stepGranularity: stepGranularity,
       presetFontSizes: presetFontSizes,
+      group: group,
       textAlign: textAlign,
       textDirection: textDirection,
       locale: locale,

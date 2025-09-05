@@ -1,4 +1,4 @@
-part of 'auto_size_builder.dart';
+part of '../../flutter_auto_size_text.dart';
 
 class _AutoSizeParentData extends ParentData
     with ContainerParentDataMixin<RenderBox> {}
@@ -7,7 +7,8 @@ class _RenderAutoSize extends RenderBox
     with
         ContainerRenderObjectMixin<RenderBox,
             ContainerParentDataMixin<RenderBox>> {
-  _RenderAutoSize({required TextFitter fitter}) : _fitter = fitter;
+  _RenderAutoSize({required TextFitter fitter, this.onConstraintsChanged})
+      : _fitter = fitter;
 
   var _overflow = false;
   var _needsBuild = true;
@@ -16,6 +17,8 @@ class _RenderAutoSize extends RenderBox
   double? _longestWordWidth;
 
   Function(double, bool)? _buildCallback;
+  final void Function(BoxConstraints)? onConstraintsChanged;
+
   void updateBuildCallback(Function(double, bool)? buildCallback) {
     if (_buildCallback == buildCallback) return;
     _previousTextScaleFactor = null;
@@ -24,6 +27,7 @@ class _RenderAutoSize extends RenderBox
   }
 
   TextFitter _fitter;
+
   void updateTextFitter(TextFitter fitter) {
     if (_fitter == fitter) return;
     if (_fitter.text != fitter.text) {
@@ -105,6 +109,8 @@ class _RenderAutoSize extends RenderBox
   @override
   void performLayout() {
     final constraints = this.constraints;
+
+    onConstraintsChanged?.call(constraints);
 
     final result = _fitter.fit(constraints, _longestWordWidth);
     _longestWordWidth = result.longestWordWidth;

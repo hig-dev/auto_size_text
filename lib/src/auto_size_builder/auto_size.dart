@@ -1,4 +1,4 @@
-part of 'auto_size_builder.dart';
+part of '../../flutter_auto_size_text.dart';
 
 class _AutoSize extends RenderObjectWidget {
   _AutoSize({
@@ -19,11 +19,13 @@ class _AutoSize extends RenderObjectWidget {
     required this.maxFontSize,
     required this.stepGranularity,
     required this.presetFontSizes,
+    this.groupConstraints,
+    this.onConstraintsChanged,
   }) {
     _validateProperties();
   }
 
-  final AutoSizeTextBuilder builder;
+  final _AutoSizeTextBuilder builder;
   final Widget? overflowReplacement;
 
   final TextSpan text;
@@ -41,6 +43,8 @@ class _AutoSize extends RenderObjectWidget {
   final double maxFontSize;
   final double stepGranularity;
   final List<double>? presetFontSizes;
+  final BoxConstraints? groupConstraints;
+  final void Function(BoxConstraints)? onConstraintsChanged;
 
   TextFitter _buildFitter() {
     return TextFitter(
@@ -59,12 +63,14 @@ class _AutoSize extends RenderObjectWidget {
       maxFontSize: maxFontSize,
       stepGranularity: stepGranularity,
       presetFontSizes: presetFontSizes,
+      groupConstraints: groupConstraints,
     );
   }
 
   @override
   _RenderAutoSize createRenderObject(BuildContext context) {
-    return _RenderAutoSize(fitter: _buildFitter());
+    return _RenderAutoSize(
+        fitter: _buildFitter(), onConstraintsChanged: onConstraintsChanged);
   }
 
   @override

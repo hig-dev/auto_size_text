@@ -1,4 +1,4 @@
-part of 'auto_size_builder.dart';
+part of '../../flutter_auto_size_text.dart';
 
 class _AutoSizeElement extends RenderObjectElement {
   _AutoSizeElement(_AutoSize super.widget);

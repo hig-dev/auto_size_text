@@ -1,16 +1,10 @@
-import 'package:flutter/rendering.dart';
-import 'package:flutter/widgets.dart';
-import 'package:flutter_auto_size_text/src/text_fitter.dart';
+part of '../../flutter_auto_size_text.dart';
 
-part 'auto_size.dart';
-part 'auto_size_element.dart';
-part 'render_auto_size.dart';
-
-typedef AutoSizeTextBuilder = Widget Function(
+typedef _AutoSizeTextBuilder = Widget Function(
     BuildContext context, double textScaleFactor, bool overflow);
 
-class AutoSizeBuilder extends StatefulWidget {
-  const AutoSizeBuilder({
+class _AutoSizeBuilder extends StatefulWidget {
+  const _AutoSizeBuilder({
     super.key,
     required this.builder,
     this.overflowReplacement,
@@ -30,9 +24,10 @@ class AutoSizeBuilder extends StatefulWidget {
     this.maxFontSize,
     this.stepGranularity,
     this.presetFontSizes,
+    this.group,
   });
 
-  final AutoSizeTextBuilder builder;
+  final _AutoSizeTextBuilder builder;
 
   /// {@macro auto_size_text.overflowReplacement}
   final Widget? overflowReplacement;
@@ -83,11 +78,29 @@ class AutoSizeBuilder extends StatefulWidget {
   /// {@macro auto_size_text.presetFontSizes}
   final List<double>? presetFontSizes;
 
+  /// {@macro auto_size_text.group}
+  final AutoSizeGroup? group;
+
   @override
-  State<AutoSizeBuilder> createState() => _AutoSizeBuilderState();
+  State<_AutoSizeBuilder> createState() => _AutoSizeBuilderState();
 }
 
-class _AutoSizeBuilderState extends State<AutoSizeBuilder> {
+class _AutoSizeBuilderState extends State<_AutoSizeBuilder> {
+  @override
+  void initState() {
+    super.initState();
+    widget.group?._register(this);
+  }
+
+  @override
+  void didUpdateWidget(covariant _AutoSizeBuilder oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.group != widget.group) {
+      oldWidget.group?._remove(this);
+      widget.group?._register(this);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final defaultTextStyle = DefaultTextStyle.of(context);
@@ -129,6 +142,22 @@ class _AutoSizeBuilderState extends State<AutoSizeBuilder> {
       maxFontSize: widget.maxFontSize ?? double.infinity,
       stepGranularity: widget.stepGranularity ?? 1.0,
       presetFontSizes: widget.presetFontSizes,
+      groupConstraints: widget.group?._effectiveConstraints,
+      onConstraintsChanged: widget.group != null
+          ? (newConstraints) {
+              widget.group?._updateConstraints(this, newConstraints);
+            }
+          : null,
     );
+  }
+
+  void _notifySync() {
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    widget.group?._remove(this);
+    super.dispose();
   }
 }
